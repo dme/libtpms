@@ -193,5 +193,10 @@ PCRCapGetHandles(
 		 TPML_HANDLE     *handleList     // OUT: list of handle
 		 );
 
+UINT16
+PCRValues_Marshal(
+		  BYTE **buffer,
+		  INT32 *size
+		  );
 
 #endif

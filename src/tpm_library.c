@@ -604,7 +604,7 @@ void GetCachedState(enum TPMLIB_StateType st,
                     unsigned char **buffer, uint32_t *buflen,
                     bool *is_empty_buffer)
 {
-     /* caller owns blob now */
+    /* caller owns blob now */
     *buffer = cached_blobs[st].buffer;
     *buflen = cached_blobs[st].buflen;
     *is_empty_buffer = (*buflen == BUFLEN_EMPTY_BUFFER);
@@ -651,6 +651,8 @@ const char *TPMLIB_StateTypeToName(enum TPMLIB_StateType st)
         return TPM_VOLATILESTATE_NAME;
     case TPMLIB_STATE_SAVE_STATE:
         return TPM_SAVESTATE_NAME;
+    case TPMLIB_STATE_PCR_VALUES:
+        return TPM_PCR_VALUES_NAME;
     }
     return NULL;
 }

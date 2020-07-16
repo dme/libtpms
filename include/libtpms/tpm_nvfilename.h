@@ -50,7 +50,8 @@
 
 #define TPM_SAVESTATE_NAME      "savestate"
 
-#define TPM_VOLATILESTATE_NAME      "volatilestate"
+#define TPM_VOLATILESTATE_NAME  "volatilestate"
 
+#define TPM_PCR_VALUES_NAME     "pcr-values"
 
 #endif

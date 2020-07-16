@@ -43,6 +43,7 @@
 #include <sys/types.h>
 
 #include "tpm_types.h"
+#include "tpm_blobs.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -157,6 +158,7 @@ enum TPMLIB_StateType {
     TPMLIB_STATE_PERMANENT  = (1 << 0),
     TPMLIB_STATE_VOLATILE   = (1 << 1),
     TPMLIB_STATE_SAVE_STATE = (1 << 2),
+    TPMLIB_STATE_PCR_VALUES = (1 << 3),
 };
 
 TPM_RESULT TPMLIB_ValidateState(enum TPMLIB_StateType st,

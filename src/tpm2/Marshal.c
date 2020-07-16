@@ -2309,3 +2309,18 @@ TPML_AC_CAPABILITIES_Marshal(TPML_AC_CAPABILITIES *source, BYTE **buffer, INT32 
     return written;
 }
 
+UINT16
+String_Marshal(const char *s, BYTE **buffer, INT32 *size)
+{
+    UINT16 written, length;
+
+    pAssert(s != NULL);
+
+    length = strlen(s) + 1; /* Include NULL. */
+
+    written = 0;
+    written += UINT16_Marshal(&length, buffer, size);
+    written += Array_Marshal((BYTE *)s, length, buffer, size);
+
+    return written;
+}

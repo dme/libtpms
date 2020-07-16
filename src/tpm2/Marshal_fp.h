@@ -392,6 +392,8 @@ extern "C" {
     TPMS_AC_OUTPUT_Marshal(TPMS_AC_OUTPUT *source, BYTE **buffer, INT32 *size);
     UINT16
     TPML_AC_CAPABILITIES_Marshal(TPML_AC_CAPABILITIES *source, BYTE **buffer, INT32 *size);
+    UINT16
+    String_Marshal(const char *s, BYTE **buffer, INT32 *size);
 
 #ifdef __cplusplus
 }

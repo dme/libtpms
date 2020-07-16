@@ -303,6 +303,32 @@ static TPM_RESULT TPM2_VolatileAllStore(unsigned char **buffer,
     return rc;
 }
 
+static TPM_RESULT TPM2_GeneratePCRValuesBlob(BYTE **buffer, INT32 *size)
+{
+    UINT16 length;
+    BYTE *buf;
+
+    length = PCRValues_Marshal(NULL, NULL);
+    if (length == 0)
+	return TPM_SUCCESS;
+
+    if (size)
+	*size = length;
+
+    if (!buffer)
+	return TPM_SUCCESS;
+
+    buf = malloc(length);
+    if (buf == NULL)
+	return TPM_FAIL;
+
+    *buffer = buf;
+
+    (void) PCRValues_Marshal(&buf, NULL);
+
+    return TPM_SUCCESS;
+}
+
 static TPM_RESULT TPM2_CancelCommand(void)
 {
     _rpc__Signal_CancelOn();
@@ -546,6 +572,9 @@ static TPM_RESULT TPM2_GetState(enum TPMLIB_StateType st,
         struct libtpms_callbacks *cbs = TPMLIB_GetCallbacks();
         bool is_empty_buffer;
 
+	if (st == TPMLIB_STATE_PCR_VALUES)
+	    return TPM_FAIL;
+
         ret = CopyCachedState(st, buffer, buflen, &is_empty_buffer);
         if (ret != TPM_SUCCESS || *buffer != NULL || is_empty_buffer)
             return ret;
@@ -577,6 +606,9 @@ static TPM_RESULT TPM2_GetState(enum TPMLIB_StateType st,
         *buflen = 0;
         ret = 0;
         break;
+    case TPMLIB_STATE_PCR_VALUES:
+	ret = TPM2_GeneratePCRValuesBlob((BYTE **)buffer, (int *)buflen);
+	break;
     }
 
     return ret;
@@ -601,6 +633,9 @@ static TPM_RESULT TPM2_SetState(enum TPMLIB_StateType st,
     INT32 stream_size = buflen;
     unsigned char *permanent = NULL, *ptr;
     INT32 permanent_len;
+
+    if (st == TPMLIB_STATE_PCR_VALUES)
+	return TPM_FAIL;
 
     if (buffer == NULL) {
         SetCachedState(st, NULL, 0);
@@ -642,6 +677,9 @@ static TPM_RESULT TPM2_SetState(enum TPMLIB_StateType st,
             if (buffer != NULL)
                 rc = TPM_BAD_TYPE;
             break;
+	default:
+	    ret = TPM_FAIL;
+	    break;
         }
         ret = rc;
         if (ret != TPM_SUCCESS)

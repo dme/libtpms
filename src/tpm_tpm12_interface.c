@@ -281,6 +281,9 @@ static TPM_RESULT TPM12_ValidateState(enum TPMLIB_StateType st,
     enum TPMLIB_StateType c_st;
     unsigned i;
 
+    if (st == TPMLIB_STATE_PCR_VALUES)
+	return TPM_FAIL;
+
 #ifdef TPM_LIBTPMS_CALLBACKS
     struct libtpms_callbacks *cbs = TPMLIB_GetCallbacks();
 
@@ -315,6 +318,9 @@ static TPM_RESULT TPM12_ValidateState(enum TPMLIB_StateType st,
         case TPMLIB_STATE_SAVE_STATE:
             ret = TPM_SaveState_NVLoad(&tpm_state);
             break;
+	default:
+	    ret = TPM_FAIL;
+	    break;
         }
     }
 
@@ -374,6 +380,9 @@ static TPM_RESULT TPM12_GetState(enum TPMLIB_StateType st,
     TPM_STORE_BUFFER tsb;
     uint32_t total;
 
+    if (st == TPMLIB_STATE_PCR_VALUES)
+	return TPM_FAIL;
+
     /* TPM not running ? */
     if (tpm_instances[0] == NULL) {
         struct libtpms_callbacks *cbs = TPMLIB_GetCallbacks();
@@ -409,6 +418,9 @@ static TPM_RESULT TPM12_GetState(enum TPMLIB_StateType st,
     case TPMLIB_STATE_SAVE_STATE:
         ret = TPM_SaveState_Store(&tsb, tpm_instances[0]);
         break;
+    default:
+	ret = TPM_FAIL;
+	break;
     }
 
     if (ret == TPM_SUCCESS) {
@@ -440,6 +452,9 @@ static TPM_RESULT TPM12_SetState(enum TPMLIB_StateType st,
     unsigned char *stream = NULL, *orig_stream = NULL;
     uint32_t stream_size = buflen;
     tpm_state_t *tpm_state = NULL;
+
+    if (st == TPMLIB_STATE_PCR_VALUES)
+	return TPM_FAIL;
 
     if (buffer == NULL) {
         SetCachedState(st, NULL, 0);
@@ -492,6 +507,9 @@ static TPM_RESULT TPM12_SetState(enum TPMLIB_StateType st,
             if (ret == TPM_SUCCESS)
                  ret = TPM_SaveState_Load(tpm_state, &stream, &stream_size);
             break;
+	default:
+	    ret = TPM_FAIL;
+	    break;
         }
         if (ret)
             ClearAllCachedState();
