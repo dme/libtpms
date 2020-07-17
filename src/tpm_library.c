@@ -653,6 +653,8 @@ const char *TPMLIB_StateTypeToName(enum TPMLIB_StateType st)
         return TPM_SAVESTATE_NAME;
     case TPMLIB_STATE_PCR_VALUES:
         return TPM_PCR_VALUES_NAME;
+    case TPMLIB_STATE_PCR_EVENT_LOG:
+        return TPM_PCR_EVENT_LOG_NAME;
     }
     return NULL;
 }

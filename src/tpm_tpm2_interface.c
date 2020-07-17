@@ -335,6 +335,11 @@ static TPM_RESULT TPM2_GeneratePCRValuesBlob(BYTE **buffer, INT32 *size)
     return TPM2_GeneratePCRBlob(PCRValues_Marshal, buffer, size);
 }
 
+static TPM_RESULT TPM2_GeneratePCREventLogBlob(BYTE **buffer, INT32 *size)
+{
+    return TPM2_GeneratePCRBlob(PCREventLog_Marshal, buffer, size);
+}
+
 static TPM_RESULT TPM2_CancelCommand(void)
 {
     _rpc__Signal_CancelOn();
@@ -578,7 +583,7 @@ static TPM_RESULT TPM2_GetState(enum TPMLIB_StateType st,
         struct libtpms_callbacks *cbs = TPMLIB_GetCallbacks();
         bool is_empty_buffer;
 
-	if (st == TPMLIB_STATE_PCR_VALUES)
+	if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
 	    return TPM_FAIL;
 
         ret = CopyCachedState(st, buffer, buflen, &is_empty_buffer);
@@ -615,6 +620,9 @@ static TPM_RESULT TPM2_GetState(enum TPMLIB_StateType st,
     case TPMLIB_STATE_PCR_VALUES:
 	ret = TPM2_GeneratePCRValuesBlob((BYTE **)buffer, (int *)buflen);
 	break;
+    case TPMLIB_STATE_PCR_EVENT_LOG:
+	ret = TPM2_GeneratePCREventLogBlob((BYTE **)buffer, (int *)buflen);
+	break;
     }
 
     return ret;
@@ -640,7 +648,7 @@ static TPM_RESULT TPM2_SetState(enum TPMLIB_StateType st,
     unsigned char *permanent = NULL, *ptr;
     INT32 permanent_len;
 
-    if (st == TPMLIB_STATE_PCR_VALUES)
+    if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
 	return TPM_FAIL;
 
     if (buffer == NULL) {

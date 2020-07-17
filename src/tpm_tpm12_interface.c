@@ -281,7 +281,7 @@ static TPM_RESULT TPM12_ValidateState(enum TPMLIB_StateType st,
     enum TPMLIB_StateType c_st;
     unsigned i;
 
-    if (st == TPMLIB_STATE_PCR_VALUES)
+    if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
 	return TPM_FAIL;
 
 #ifdef TPM_LIBTPMS_CALLBACKS
@@ -380,7 +380,7 @@ static TPM_RESULT TPM12_GetState(enum TPMLIB_StateType st,
     TPM_STORE_BUFFER tsb;
     uint32_t total;
 
-    if (st == TPMLIB_STATE_PCR_VALUES)
+    if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
 	return TPM_FAIL;
 
     /* TPM not running ? */
@@ -453,7 +453,7 @@ static TPM_RESULT TPM12_SetState(enum TPMLIB_StateType st,
     uint32_t stream_size = buflen;
     tpm_state_t *tpm_state = NULL;
 
-    if (st == TPMLIB_STATE_PCR_VALUES)
+    if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
 	return TPM_FAIL;
 
     if (buffer == NULL) {

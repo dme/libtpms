@@ -54,4 +54,6 @@
 
 #define TPM_PCR_VALUES_NAME     "pcr-values"
 
+#define TPM_PCR_EVENT_LOG_NAME  "pcr-event-log"
+
 #endif

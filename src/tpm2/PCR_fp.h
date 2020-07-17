@@ -199,4 +199,10 @@ PCRValues_Marshal(
 		  INT32 *size
 		  );
 
+UINT16
+PCREventLog_Marshal(
+		    BYTE **buffer,
+		    INT32 *size
+		    );
+
 #endif
