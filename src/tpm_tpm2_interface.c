@@ -303,12 +303,13 @@ static TPM_RESULT TPM2_VolatileAllStore(unsigned char **buffer,
     return rc;
 }
 
-static TPM_RESULT TPM2_GeneratePCRValuesBlob(BYTE **buffer, INT32 *size)
+static TPM_RESULT TPM2_GeneratePCRBlob(UINT16 (*marshal_fn)(BYTE **, INT32 *),
+				       BYTE **buffer, INT32 *size)
 {
     UINT16 length;
     BYTE *buf;
 
-    length = PCRValues_Marshal(NULL, NULL);
+    length = marshal_fn(NULL, NULL);
     if (length == 0)
 	return TPM_SUCCESS;
 
@@ -324,9 +325,14 @@ static TPM_RESULT TPM2_GeneratePCRValuesBlob(BYTE **buffer, INT32 *size)
 
     *buffer = buf;
 
-    (void) PCRValues_Marshal(&buf, NULL);
+    (void) marshal_fn(&buf, NULL);
 
     return TPM_SUCCESS;
+}
+
+static TPM_RESULT TPM2_GeneratePCRValuesBlob(BYTE **buffer, INT32 *size)
+{
+    return TPM2_GeneratePCRBlob(PCRValues_Marshal, buffer, size);
 }
 
 static TPM_RESULT TPM2_CancelCommand(void)
