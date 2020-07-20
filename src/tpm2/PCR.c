@@ -74,6 +74,18 @@
 #include "Helpers_fp.h"
 #include "tpm_blobs.h"
 
+typedef struct TPMI_PCR_EVENT {
+    struct TPMI_PCR_EVENT *next;
+
+    UINT32     pcrNumber;
+    TPM_ALG_ID alg;
+    BYTE       *data;
+    UINT32     sequence_number;
+} TPMI_PCR_EVENT;
+
+TPMI_PCR_EVENT *pcr_log_head, *pcr_log_tail;
+UINT32 pcr_log_count, pcr_event_sequence_number;
+
 /* The initial value of PCR attributes.  The value of these fields should be consistent with PC
    Client specification In this implementation, we assume the total number of implemented PCR is
    24. */
@@ -710,6 +722,8 @@ PCRExtend(
     // Extend PCR if it is allocated
     if(pcrData != NULL)
 	{
+	    TPMI_PCR_EVENT *ple;
+
 	    pcrSize = CryptHashGetDigestSize(hash);
 	    CryptHashStart(&hashState, hash);
 	    CryptDigestUpdate(&hashState, pcrSize, pcrData);
@@ -717,6 +731,28 @@ PCRExtend(
 	    CryptHashEnd(&hashState, pcrSize, pcrData);
 	    // PCR has changed so update the pcrCounter if necessary
 	    PCRChanged(handle);
+
+	    ple = malloc(sizeof(*ple));
+	    if (ple == NULL)
+		FAIL(FATAL_ERROR_INTERNAL);
+	    ple->next = NULL;
+	    ple->pcrNumber = handle - PCR_FIRST;
+	    ple->alg = hash;
+	    ple->data = malloc(pcrSize);
+	    if (ple->data == NULL) {
+		free(ple);
+		FAIL(FATAL_ERROR_INTERNAL);
+	    }
+	    memcpy(ple->data, data, pcrSize);
+	    ple->sequence_number = pcr_event_sequence_number++;
+
+	    if (pcr_log_tail)
+		pcr_log_tail->next = ple;
+	    if (!pcr_log_head)
+		pcr_log_head = ple;
+	    pcr_log_tail = ple;
+
+	    pcr_log_count++;
 	}
     return;
 }
