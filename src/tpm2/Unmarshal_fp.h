@@ -469,6 +469,8 @@ extern "C" {
     TPMS_CONTEXT_Unmarshal(TPMS_CONTEXT *target, BYTE **buffer, INT32 *size);
     LIB_EXPORT TPM_RC
     TPM_AT_Unmarshal(TPM_AT *target, BYTE **buffer, INT32 *size);
+    LIB_EXPORT TPM_RC
+    String_Unmarshal(char **s, BYTE **buffer, INT32 *size);
     
 #ifdef __cplusplus
 }

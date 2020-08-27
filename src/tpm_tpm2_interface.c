@@ -648,7 +648,7 @@ static TPM_RESULT TPM2_SetState(enum TPMLIB_StateType st,
     unsigned char *permanent = NULL, *ptr;
     INT32 permanent_len;
 
-    if (st & (TPMLIB_STATE_PCR_VALUES | TPMLIB_STATE_PCR_EVENT_LOG))
+    if (st == TPMLIB_STATE_PCR_VALUES)
 	return TPM_FAIL;
 
     if (buffer == NULL) {
@@ -691,6 +691,9 @@ static TPM_RESULT TPM2_SetState(enum TPMLIB_StateType st,
             if (buffer != NULL)
                 rc = TPM_BAD_TYPE;
             break;
+	case TPMLIB_STATE_PCR_EVENT_LOG:
+	    rc = PCREventLog_Unmarshal(&stream, &stream_size);
+	    break;
 	default:
 	    ret = TPM_FAIL;
 	    break;

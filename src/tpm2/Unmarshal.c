@@ -4329,3 +4329,23 @@ TPM_AT_Unmarshal(TPM_AT *target, BYTE **buffer, INT32 *size)
     }
     return rc;
 }
+
+TPM_RC
+String_Unmarshal(char **s, BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc;
+    UINT16 length;
+
+    *s = NULL;
+
+    rc = UINT16_Unmarshal(&length, buffer, size);
+    if (rc == TPM_RC_SUCCESS) {
+	*s = malloc(length);
+	if (*s == NULL)
+	    FAIL(FATAL_ERROR_INTERNAL);
+
+	rc = Array_Unmarshal((BYTE *)*s, length, buffer, size);
+    }
+
+    return rc;
+}

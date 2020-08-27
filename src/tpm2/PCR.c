@@ -74,6 +74,9 @@
 #include "Helpers_fp.h"
 #include "tpm_blobs.h"
 
+#define TPM_HAVE_TPM2_DECLARATIONS
+#include "tpm_library_intern.h"
+
 typedef struct TPMI_PCR_EVENT {
     struct TPMI_PCR_EVENT *next;
 
@@ -1350,4 +1353,107 @@ PCREventLog_Marshal(BYTE **buffer, INT32 *size)
     }
 
     return written;
+}
+
+/*
+ * The format of the blob consumed by this function is defined in
+ * tpm_blobs.h and intended to be stable from version to version.
+ */
+TPM_RC
+PCREventLog_Unmarshal(BYTE **buffer, INT32 *size)
+{
+    TPM_RC rc;
+    UINT32 version;
+    UINT32 log_count, highest_seq_no, i;
+    TPMI_PCR_EVENT *head, *prev, *ple;
+
+    rc = UINT32_Unmarshal(&version, buffer, size);
+    if (rc == TPM_RC_SUCCESS && version != TPMLIB_BLOB_PCR_EVENT_LOG_VERSION_1) {
+	TPMLIB_LogTPM2Error("Unexpected PCR event log version: %u\n",
+			    version);
+	return TPM_RC_BAD_PARAMETER;
+    }
+
+    if (rc == TPM_RC_SUCCESS) {
+	rc = UINT32_Unmarshal(&log_count, buffer, size);
+    }
+
+    highest_seq_no = 0;
+    head = prev = ple = NULL;
+    for (i = 0; i < log_count; i++) {
+	UINT32 pcrSize;
+	char *s;
+
+	ple = malloc(sizeof (*ple));
+	if (ple == NULL)
+	    FAIL(FATAL_ERROR_INTERNAL);
+	ple->next = NULL;
+	ple->data = NULL;
+
+#define safely(fn) { rc = fn; if (rc != TPM_RC_SUCCESS) goto unwind; }
+
+	safely(UINT32_Unmarshal(&ple->pcrNumber, buffer, size));
+	safely(TPM_ALG_ID_Unmarshal(&ple->alg, buffer, size));
+	safely(String_Unmarshal(&s, buffer, size));
+	/*
+	 * We don't care about the string version of the algorithm -
+	 * it's present for external users.
+	 */
+	free(s);
+	safely(UINT32_Unmarshal(&pcrSize, buffer, size));
+
+	ple->data = malloc(pcrSize);
+	if (ple->data == NULL)
+	    FAIL(FATAL_ERROR_INTERNAL);
+
+	safely(Array_Unmarshal(ple->data, pcrSize, buffer, size));
+	safely(UINT32_Unmarshal(&ple->sequence_number, buffer, size));
+
+#undef safely
+
+	if (ple->sequence_number > highest_seq_no)
+	    highest_seq_no = ple->sequence_number;
+
+	if (prev)
+	    prev->next = ple;
+	if (!head)
+	    head = ple;
+
+	prev = ple;
+    }
+
+    /*
+     * Having successfully unmarshaled the blob, free any existing PCR
+     * event log before adopting the one generated here.
+     */
+    while (pcr_log_head != NULL) {
+	ple = pcr_log_head;
+	pcr_log_head = ple->next;
+
+	free(ple->data);
+	free(ple);
+    }
+
+    pcr_log_head = head;
+    pcr_log_tail = prev;
+    pcr_log_count = log_count;
+    pcr_event_sequence_number = highest_seq_no + 1;
+
+    return TPM_RC_SUCCESS;
+
+ unwind:
+    if (ple != NULL) {
+	free(ple->data);
+    }
+    free(ple);
+
+    while (head != NULL) {
+	ple = head;
+	head = head->next;
+
+	free(ple->data);
+	free(ple);
+    }
+
+    return TPM_RC_FAILURE;
 }

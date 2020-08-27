@@ -205,4 +205,10 @@ PCREventLog_Marshal(
 		    INT32 *size
 		    );
 
+TPM_RC
+PCREventLog_Unmarshal(
+		      BYTE **buffer,
+		      INT32 *size
+		      );
+
 #endif
