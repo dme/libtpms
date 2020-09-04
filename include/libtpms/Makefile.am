@@ -7,6 +7,7 @@
 libtpmsincludedir = $(includedir)/libtpms
 
 libtpmsinclude_HEADERS = \
+	tpm_blobs.h \
 	tpm_error.h \
 	tpm_library.h \
 	tpm_memory.h \
