@@ -89,9 +89,9 @@ BOOL OpenSSLEccGetPrivate(
                          );
 #endif
 
-#if USE_OPENSSL_FUNCTIONS_RSA
-
 const char *GetDigestNameByHashAlg(const TPM_ALG_ID hashAlg);
+
+#if USE_OPENSSL_FUNCTIONS_RSA
 
 LIB_EXPORT TPM_RC
 OpenSSLCryptRsaGenerateKey(

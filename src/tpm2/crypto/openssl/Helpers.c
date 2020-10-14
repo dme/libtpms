@@ -300,8 +300,6 @@ OpenSSLEccGetPrivate(
 }
 #endif // USE_OPENSSL_FUNCTIONS_EC
 
-#if USE_OPENSSL_FUNCTIONS_RSA
-
 static const struct hnames {
     const char *name;
     TPM_ALG_ID hashAlg;
@@ -345,6 +343,8 @@ GetDigestNameByHashAlg(const TPM_ALG_ID hashAlg)
     }
     return NULL;
 }
+
+#if USE_OPENSSL_FUNCTIONS_RSA
 
 static BOOL
 ComputePrivateExponentD(
